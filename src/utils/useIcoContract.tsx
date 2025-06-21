@@ -127,16 +127,12 @@ export const useBnbTokenPurchase = () => {
         address: icoAddress,
         abi: icoAbi,
         functionName: "buyTokens",
-        args: [
-          tokenAmountWithDecimals,
-          asset,
-          referrer,
-        ],
+        args: [tokenAmountWithDecimals, asset, referrer],
         value: calculateValue,
       });
     } catch (error) {
       console.error("❌ Error in buyTokenWithBnb:", error);
-      alert(error)
+      alert(error);
     }
   };
 
@@ -150,3 +146,92 @@ export const useBnbTokenPurchase = () => {
   };
 };
 
+export const useBuyTokensWithUSDT = () => {
+  const {
+    writeContract,
+    data: hash,
+    isPending: isUSDTPending,
+    isSuccess: isUSDTSuccess,
+  } = useWriteContract();
+
+  const {
+    isLoading: txUSDTLoading,
+    isSuccess: txUSDTSuccess,
+    error: txError,
+  } = useWaitForTransactionReceipt({ hash });
+
+  const buyTokensWithUSDT = ({
+    value,
+    asset,
+    referrer,
+  }: {
+    value: any;
+    asset: any;
+    referrer: any;
+  }) => {
+    if (!value) return;
+
+    const tokenAmountWithDecimals = parseUnits(value.toString(), 18);
+    writeContract({
+      address: icoAddress,
+      abi: icoAbi,
+      functionName: "buyTokens",
+      args: [tokenAmountWithDecimals, asset, referrer],
+      value: BigInt(0),
+    });
+  };
+
+  return {
+    buyTokensWithUSDT,
+    isUSDTPending,
+    isUSDTSuccess,
+    txUSDTLoading,
+    txUSDTSuccess,
+    txError,
+  };
+};
+
+export const useBuyTokensWithUSDC = () => {
+  const {
+    writeContract,
+    data: hash,
+    isPending: isUSDCPending,
+    isSuccess: isUSDCSuccess,
+  } = useWriteContract();
+
+  const {
+    isLoading: txUSDCLoading,
+    isSuccess: txUSDCSuccess,
+    error: txError,
+  } = useWaitForTransactionReceipt({ hash });
+
+  const buyTokensWithUSDC = ({
+    value,
+    asset,
+    referrer,
+  }: {
+    value: any;
+    asset: any;
+    referrer: any;
+  }) => {
+    if (!value) return;
+
+    const tokenAmountWithDecimals = parseUnits(value.toString(), 18);
+    writeContract({
+      address: icoAddress,
+      abi: icoAbi,
+      functionName: "buyTokens",
+      args: [tokenAmountWithDecimals, asset, referrer],
+      value: BigInt(0),
+    });
+  };
+
+  return {
+    buyTokensWithUSDC,
+    isUSDCPending,
+    isUSDCSuccess,
+    txUSDCLoading,
+    txUSDCSuccess,
+    txError,
+  };
+};

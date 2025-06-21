@@ -8,23 +8,21 @@ import { useAccount, useConfig } from "wagmi";
 import { estimateGas } from "wagmi/actions";
 import { parseUnits } from "viem";
 import { parseEther } from "viem";
-import { usdcAbi, usdcAddress } from "@/contract/usdc";
+import { usdtAbi, usdtAddress } from "@/contract/usdt";
 import { icoAddress } from "@/contract/ico";
 
-
-
-export const useUsdcApproval = ({ amountToSpend }: { amountToSpend: any }) => {
+export const useUsdtApproval = ({ amountToSpend }: { amountToSpend: any }) => {
   const { address } = useAccount();
   console.log("amountToSpend", amountToSpend);
   
   const {
-    data: usdcAllowance,
+    data: allowance,
     refetch: refetchAllowance,
     isLoading: allowanceLoading,
     isError: allowanceError,
   } = useReadContract({
-    abi: usdcAbi,
-    address: usdcAddress,
+    abi: usdtAbi,
+    address: usdtAddress,
     functionName: "allowance",
     args: [address, icoAddress],
     // enabled: !!address,
@@ -34,36 +32,36 @@ export const useUsdcApproval = ({ amountToSpend }: { amountToSpend: any }) => {
   const {
     writeContract,
     data: txApprovalHash,
-    isPending: isUSDCApproving,
+    isPending: isApproving,
     isSuccess: writeSuccess,
   } = useWriteContract();
 
-  const approveUSDC = () => {
+  const approveUSDT = () => {
     if (!amountToSpend || !address) return;
     writeContract({
-      abi: usdcAbi,
-    address: usdcAddress,
+      abi: usdtAbi,
+      address: usdtAddress,
       functionName: "approve",
       args: [icoAddress, amountToSpend],
     });
   };
 
   // 3️⃣ Wait for approve tx to confirm
-  const { isLoading: approvalTxLoading, isSuccess: approvalUsdcConfirmed } =
+  const { isLoading: approvalTxLoading, isSuccess: approvalConfirmed } =
     useWaitForTransactionReceipt({ hash: txApprovalHash });
-  if (approvalUsdcConfirmed) {
+  if (approvalConfirmed) {
     refetchAllowance?.();
   }
 
   return {
-    usdcAllowance,
+    allowance,
     allowanceLoading,
     allowanceError,
-    approveUSDC,
+    approveUSDT,
     refetchAllowance,
     approvalTxLoading,
-    approvalUsdcConfirmed,
-    isUSDCApproving,
+    approvalConfirmed,
+    isApproving,
     writeSuccess,
     txApprovalHash,
   };

@@ -8,10 +8,14 @@ import { toast } from "react-toastify";
 import { useRouter } from "next/router";
 import {
   useBnbTokenPurchase,
+  useBuyTokensWithUSDC,
+  useBuyTokensWithUSDT,
   usePreviewBNB,
   usePreviewUSDC,
   usePreviewUSDT,
 } from "@/utils/useIcoContract";
+import { useUsdtApproval } from "@/utils/useUSDTContract";
+import { useUsdcApproval } from "@/utils/useUSDCContract";
 interface PurchaseModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -36,26 +40,51 @@ const PurchaseModal: React.FC<PurchaseModalProps> = ({
   const [payableAmount, setPayableAmount] = useState<any>("");
   const [ownerAddress, setOwnerAddress] = useState<any>("");
   const [calculateValue, setCalculateValue] = useState<any>(0);
-  //   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
   const router = useRouter();
-
+const resetForm = () => {
+    setDwtAmount("");
+    setAsset("");
+    // setReferrerAddress("");
+    setPayableAmountFromWei("");
+    setPayableAmount("");
+    setShowModal(false);
+  };
   const bnbEnabled = asset == 0 && !!dwtAmount;
   const usdcEnabled = asset == 1 && !!dwtAmount;
   const usdtEnabled = asset == 2 && !!dwtAmount;
   const { bnbValueEth, bnbValueWei } = usePreviewBNB(
     bnbEnabled ? dwtAmount : null
   );
-  const { usdcValueEth } = usePreviewUSDC(usdcEnabled ? dwtAmount : null);
-  const { usdtValueEth } = usePreviewUSDT(usdtEnabled ? dwtAmount : null);
+  const { usdcValueEth, usdcValueWei } = usePreviewUSDC(
+    usdcEnabled ? dwtAmount : null
+  );
+  const { usdtValueEth, usdtValueWei } = usePreviewUSDT(
+    usdtEnabled ? dwtAmount : null
+  );
+  const { allowance, approveUSDT, approvalConfirmed, isApproving } =
+    useUsdtApproval({ amountToSpend: usdtValueWei });
+  const { usdcAllowance, approveUSDC, approvalUsdcConfirmed, isUSDCApproving } =
+    useUsdcApproval({ amountToSpend: usdcValueWei });
+  const { buyTokensWithUSDT, txUSDTLoading, txUSDTSuccess, isUSDTPending } =
+    useBuyTokensWithUSDT();
+  const {
+    buyTokensWithUSDC,
+    isUSDCPending,
+    isUSDCSuccess,
+    txUSDCLoading,
+    txUSDCSuccess,
+  } = useBuyTokensWithUSDC();
   const { buyTokenWithBnb, txLoading, txBNBSuccess, isPending } =
     useBnbTokenPurchase();
-  const handleWrite = () => {
+  const handleWrite = async () => {
     if (!dwtAmount) {
       setError(true);
       return;
     }
     if (asset == 0) {
+      setIsLoading(isPending);
       buyTokenWithBnb({
         value: dwtAmount,
         asset,
@@ -63,13 +92,65 @@ const PurchaseModal: React.FC<PurchaseModalProps> = ({
           referrerAddress || "0x0000000000000000000000000000000000000000",
         bnbValueWei,
       });
+    } else if (asset == 1) {
+      if ((usdcAllowance as bigint) < (usdcValueWei as bigint)) {
+        approveUSDC();
+
+      } else if ((usdcAllowance as bigint) >= (usdcValueWei as bigint)) {
+        buyTokensWithUSDC({
+          value: dwtAmount,
+          asset,
+          referrer:
+            referrerAddress || "0x0000000000000000000000000000000000000000",
+        });
+      }
+      
+    } else if (asset == 2) {
+      if ((allowance as bigint) < (usdtValueWei as bigint)) {
+        approveUSDT();
+      } else if ((allowance as bigint) >= (usdtValueWei as bigint)) {
+        buyTokensWithUSDT({
+          value: dwtAmount,
+          asset,
+          referrer:
+            referrerAddress || "0x0000000000000000000000000000000000000000",
+        });
+      }
+    }
+  };
+  const handleBuyToken = () => {
+    if (approvalConfirmed) {
+      buyTokensWithUSDT({
+        value: dwtAmount,
+        asset,
+        referrer:
+          referrerAddress || "0x0000000000000000000000000000000000000000",
+      });
+    }
+  };
+  const handleUSDCBuyToken = () => {
+    if (approvalConfirmed) {
+      buyTokensWithUSDC({
+        value: dwtAmount,
+        asset,
+        referrer:
+          referrerAddress || "0x0000000000000000000000000000000000000000",
+      });
+      // resetForm()
     }
   };
   useEffect(() => {
-    if (txBNBSuccess) {
+    handleUSDCBuyToken();
+  }, [approvalUsdcConfirmed]);
+  useEffect(() => {
+    handleBuyToken();
+  }, [approvalConfirmed]);
+  useEffect(() => {
+    if (txBNBSuccess || txUSDTSuccess || txUSDCSuccess) {
       toast.success("Purchase DogWalker Token Successfully!");
+      resetForm()
     }
-  }, [txBNBSuccess]);
+  }, [txBNBSuccess, txUSDTSuccess, txUSDCSuccess]);
   useEffect(() => {
     if (dwtAmount) {
       if (asset == 0) {
@@ -177,9 +258,23 @@ const PurchaseModal: React.FC<PurchaseModalProps> = ({
           <button
             className={styles.submitButton}
             onClick={handleWrite}
-            disabled={txLoading || isPending}
+            disabled={
+              txLoading ||
+              isPending ||
+              isUSDTPending ||
+              isApproving ||
+              isUSDCApproving ||
+              isUSDCPending
+            }
           >
-            {txLoading || isPending ? "Loading..." : "Purchase Token"}
+            {txLoading ||
+            isPending ||
+            isUSDTPending ||
+            isApproving ||
+            isUSDCApproving ||
+            isUSDCPending
+              ? "Loading..."
+              : "Purchase Token"}
           </button>
         )}
       </div>
