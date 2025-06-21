@@ -1,0 +1,140 @@
+@use "./colors" as *;
+@import "tailwindcss";
+
+@import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  font-size: 62.5%;
+  background-color: $white-smooth;
+}
+
+:root {
+  --emoji-fonts: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji",
+    sans-serif;
+}
+
+body {
+  position: relative;
+  font-size: 1.6rem;
+  font-family: "Poppins", sans-serif;
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: hidden;
+}
+
+@font-face {
+  font-family: "Bogart Trial";
+  src: url("/fonts/Bogart-Light-trial.ttf") format("truetype");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Bogart Trial";
+  src: url("/fonts/Bogart-Regular-trial.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Bogart Trial";
+  src: url("/fonts/Bogart-Bold-trial.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.highlight {
+  color: $main-color;
+}
+
+.wallet-container {
+  position: relative;
+  padding: 1rem;
+  max-width: 400px;
+  margin: 0 auto;
+  display: flex;
+  justify-items: center;
+}
+
+.connect-button {
+  padding: 7px 15px;
+  background-color: #ffb94a;
+  color: white;
+  border: none;
+  border-radius: 1rem;
+  cursor: pointer;
+  // margin-bottom: 10px;
+  transition: background-color 0.3s ease;
+  font-size: 14px;
+}
+.disconnect-button {
+  padding: 10px 10px;
+  background-color: #7a2314;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  margin-bottom: 10px;
+  transition: background-color 0.3s ease;
+  font-size: 12px;
+}
+.connect-button:hover,
+.disconnect-button:hover {
+  background-color: #ffb94a;
+}
+.connect-section {
+  position: absolute;
+  // top: 100%; // Pushes it just below the button
+  left: 0;
+  width: 100%;
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+}
+
+.wallet-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: white;
+  border: 1px solid #ddd;
+  padding: 1rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin-top: 39px;
+}
+
+.wallet-option {
+  padding: 10px;
+  background: #e0e7ff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.3s ease;
+}
+
+.wallet-option:hover {
+  background: #c7d2fe;
+}
+
+.wallet-info p {
+  margin: 0.5rem 0;
+}
