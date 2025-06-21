@@ -20,7 +20,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 const origin =
-  typeof window !== "undefined" ? window.location.origin : "http://localhost:3001";
+  typeof window !== "undefined" ? window.location.origin : "https://reliable-hummingbird-72c4a6.netlify.app";
 const config = createConfig({
   chains: [bscTestnet],
   connectors: [
