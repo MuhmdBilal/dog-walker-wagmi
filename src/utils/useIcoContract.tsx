@@ -100,6 +100,7 @@ export const useBnbTokenPurchase = () => {
     isPending,
     isSuccess,
   } = useWriteContract();
+
   const {
     isLoading: txLoading,
     isSuccess: txBNBSuccess,
@@ -107,31 +108,38 @@ export const useBnbTokenPurchase = () => {
   } = useWaitForTransactionReceipt({ hash });
 
   const buyTokenWithBnb = ({
-  value,
-  asset,
-  referrer,
-  bnbValueWei
-}: {
-  value: any;
-  asset: any;
-  referrer: any;
-  bnbValueWei: any
-}) => {
-  const tokenAmountWithDecimals = parseUnits(value.toString(), 18); // returns bigint
-  const weiValueCal = parseUnits("0.000001", 18); // returns bigint
-  const calculateValue = bnbValueWei + weiValueCal; 
-  writeContract({
-    address: icoAddress,
-    abi: icoAbi,
-    functionName: "buyTokens",
-    args: [
-      tokenAmountWithDecimals,
-      asset,
-      referrer,
-    ],
-    value: calculateValue, // ✅ now a bigint
-  });
-};
+    value,
+    asset,
+    referrer,
+    bnbValueWei,
+  }: {
+    value: any;
+    asset: any;
+    referrer: any;
+    bnbValueWei: any;
+  }) => {
+    try {
+      const tokenAmountWithDecimals = parseUnits(value.toString(), 18); // returns bigint
+      const weiValueCal = parseUnits("0.000001", 18); // returns bigint
+      const calculateValue = bnbValueWei + weiValueCal;
+
+      writeContract({
+        address: icoAddress,
+        abi: icoAbi,
+        functionName: "buyTokens",
+        args: [
+          tokenAmountWithDecimals,
+          asset,
+          referrer,
+        ],
+        value: calculateValue,
+      });
+    } catch (error) {
+      console.error("❌ Error in buyTokenWithBnb:", error);
+      alert(error)
+    }
+  };
+
   return {
     buyTokenWithBnb,
     isPending,
@@ -141,3 +149,4 @@ export const useBnbTokenPurchase = () => {
     txError,
   };
 };
+
