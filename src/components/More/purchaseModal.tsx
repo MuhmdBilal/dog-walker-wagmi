@@ -10,12 +10,14 @@ import {
   useBnbTokenPurchase,
   useBuyTokensWithUSDC,
   useBuyTokensWithUSDT,
+  useIcoRemainingBalance,
   usePreviewBNB,
   usePreviewUSDC,
   usePreviewUSDT,
+  useTokenSoldBalance,
 } from "@/utils/useIcoContract";
-import { useUsdtApproval } from "@/utils/useUSDTContract";
-import { useUsdcApproval } from "@/utils/useUSDCContract";
+import { useUsdtApproval, useUSDTBalanceOf } from "@/utils/useUSDTContract";
+import { useUsdcApproval, useUSDCBalanceOf } from "@/utils/useUSDCContract";
 interface PurchaseModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -43,7 +45,7 @@ const PurchaseModal: React.FC<PurchaseModalProps> = ({
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
   const router = useRouter();
-const resetForm = () => {
+  const resetForm = () => {
     setDwtAmount("");
     setAsset("");
     // setReferrerAddress("");
@@ -60,9 +62,14 @@ const resetForm = () => {
   const { usdcValueEth, usdcValueWei } = usePreviewUSDC(
     usdcEnabled ? dwtAmount : null
   );
+
   const { usdtValueEth, usdtValueWei } = usePreviewUSDT(
     usdtEnabled ? dwtAmount : null
   );
+  const { refetchTokenSold } = useTokenSoldBalance();
+  const { refetchIcoRemaining } = useIcoRemainingBalance();
+  const { usdcBalanceOf } = useUSDCBalanceOf();
+  const { usdtBalanceOf } = useUSDTBalanceOf();
   const { allowance, approveUSDT, approvalConfirmed, isApproving } =
     useUsdtApproval({ amountToSpend: usdtValueWei });
   const { usdcAllowance, approveUSDC, approvalUsdcConfirmed, isUSDCApproving } =
@@ -93,9 +100,12 @@ const resetForm = () => {
         bnbValueWei,
       });
     } else if (asset == 1) {
+      if (usdcValueEth > usdcBalanceOf) {
+        toast.error("Insufficient balance");
+        return;
+      }
       if ((usdcAllowance as bigint) < (usdcValueWei as bigint)) {
         approveUSDC();
-
       } else if ((usdcAllowance as bigint) >= (usdcValueWei as bigint)) {
         buyTokensWithUSDC({
           value: dwtAmount,
@@ -104,8 +114,11 @@ const resetForm = () => {
             referrerAddress || "0x0000000000000000000000000000000000000000",
         });
       }
-      
     } else if (asset == 2) {
+       if (usdtValueEth > usdtBalanceOf) {
+        toast.error("Insufficient balance");
+        return;
+      }
       if ((allowance as bigint) < (usdtValueWei as bigint)) {
         approveUSDT();
       } else if ((allowance as bigint) >= (usdtValueWei as bigint)) {
@@ -139,8 +152,11 @@ const resetForm = () => {
       // resetForm()
     }
   };
+
   useEffect(() => {
-    handleUSDCBuyToken();
+    if (approvalUsdcConfirmed) {
+      handleUSDCBuyToken();
+    }
   }, [approvalUsdcConfirmed]);
   useEffect(() => {
     handleBuyToken();
@@ -148,7 +164,9 @@ const resetForm = () => {
   useEffect(() => {
     if (txBNBSuccess || txUSDTSuccess || txUSDCSuccess) {
       toast.success("Purchase DogWalker Token Successfully!");
-      resetForm()
+      resetForm();
+      refetchTokenSold();
+      refetchIcoRemaining();
     }
   }, [txBNBSuccess, txUSDTSuccess, txUSDCSuccess]);
   useEffect(() => {

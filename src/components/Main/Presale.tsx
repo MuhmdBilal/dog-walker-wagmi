@@ -18,6 +18,7 @@ import PreSaleRectangleRightTwo from "@/assets/img/PreSaleRectangleRightTwo.svg"
 import PurchaseModal from "../More/purchaseModal";
 import { useAccount, useConfig } from "wagmi";
 import { toast } from "react-toastify";
+import { useCurrentRoundPrice, useGetCurrentPrice, useIcoRemainingBalance, useMaxPaise, useTokenSoldBalance, useTotalRaisedUSD } from "@/utils/useIcoContract";
 const Presale: React.FC = () => {
   const { t } = useTranslation("presale");
 
@@ -26,9 +27,23 @@ const Presale: React.FC = () => {
   const [icoRemaining, setIcoRemaining] = useState<any>(0);
   const [currentPriceData, setCurrentPriceData] = useState<any>(0);
   const [tokensSoldData, setTokensSoldData] = useState<any>(0);
-  const [percentageRaised, setPercentageRaised] = useState<any>(0);
-  const [currentRound, setCurrentRound] = useState<any>(0);
+  // const [percentageRaised, setPercentageRaised] = useState<any>(0);
+  // const [currentRound, setCurrentRound] = useState<any>(0);
   const { address, isConnected } = useAccount();
+
+const { tokenSOldBalance } = useTokenSoldBalance();
+const { icoRemainingBalance } = useIcoRemainingBalance();
+const { currentPrice } = useGetCurrentPrice();
+const { currentRound } = useCurrentRoundPrice();
+const { totalRaisedUSD } = useTotalRaisedUSD();
+const { maxPaise } = useMaxPaise();
+const percentageRaised =
+        Number(maxPaise) > 0
+          ? Math.min(
+              (Number(totalRaisedUSD) / Number(maxPaise)) * 100,
+              100
+            )
+          : 0;
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 992);
     checkMobile();
@@ -99,7 +114,7 @@ const Presale: React.FC = () => {
           <div className={classes.presale__boxOne}>
             <div className={classes.priceBox}>
               <span className={classes.label}>{t("launchPriceLabel")}</span>
-              <span className={classes.price}>{t("price")}</span>
+              <span className={classes.price}>{t("price")} {currentPrice}$</span>
               <span className={classes.listing}>
                 {t("listingPriceLabel")}:{t("listingPrice")}
               </span>
@@ -119,49 +134,24 @@ const Presale: React.FC = () => {
           <div className={classes.presale__boxThree}>
             <div className={classes.progress}>
               <div className={classes.bar}>
-                <div className={classes.filled} style={{ width: "20%" }} />
-                <span className={classes.percentage}>10%</span>
+                <div className={classes.filled}  style={{ width: `${percentageRaised}%` }} />
+                <span className={classes.percentage}>{percentageRaised.toFixed(2)}%</span>
               </div>
               <div className={classes.infoRow}>
                 <span className={classes.sold}>
-                  {t("soldLabel")} {t("soldAmount")}
+                  {t("soldLabel")} {Number(tokenSOldBalance).toFixed(2)} DWT
                 </span>
                 <span className={classes.total}>
-                  {t("totalLabel")} {t("totalAmount")}
+                  {t("totalLabel")} {Number(icoRemainingBalance).toFixed(2)}
                 </span>
               </div>
             </div>
           </div>
 
           <div className={classes.presale__boxFour}>
-            <div className={classes.timer}>
-              <div className={classes.timerRow}>
-                {["days", "hours", "mins", "secs"].map((u, i, arr) => (
-                  <React.Fragment key={u}>
-                    {/* wrapper dla liczby + etykiety */}
-                    <div className={classes.unitGroup}>
-                      <div className={classes.unitBox}>
-                        {u === "days"
-                          ? "3"
-                          : u === "hours"
-                          ? "12"
-                          : u === "mins"
-                          ? "28"
-                          : "37"}
-                      </div>
-                      <div className={classes.unitLabel}>{t(u)}</div>
-                    </div>
-                    {/* dwukropek, poza ostatnim */}
-                    {i < arr.length - 1 && (
-                      <div className={classes.colon}>:</div>
-                    )}
-                  </React.Fragment>
-                ))}
-              </div>
-              <small className={classes.until}>
-                <Image src={RocketIcon} alt="" />
-                {t("until")}
-              </small>
+           <div className={classes.timer}>
+              <span className={classes.label}>{t("currentRound")}</span>
+              <span className={classes.currentRound}>{currentRound}</span>
             </div>
           </div>
 

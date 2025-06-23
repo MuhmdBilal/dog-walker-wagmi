@@ -2,7 +2,7 @@
   "heading": "Token Pre-Sale",
   "howToBuy": "How to buy?",
   "launchPriceLabel": "Launch Price",
-  "price": "1 DWT = 0.1$",
+  "price": "1 DWT ",
   "listingPriceLabel": "Listning Price",
   "listingPrice": "1$",
   "soldLabel": "Sold:",
@@ -15,5 +15,6 @@
   "secs": "Secs",
   "until": "Until pre-sale launch",
   "purchaseCTA": "Purchase DogWalker Token",
-  "poweredPrefix": "Powered & Supported by"
+  "poweredPrefix": "Powered & Supported by",
+  "currentRound" : "Current Round"
 }

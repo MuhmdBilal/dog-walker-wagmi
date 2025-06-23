@@ -13,8 +13,6 @@ import { icoAddress } from "@/contract/ico";
 
 export const useUsdtApproval = ({ amountToSpend }: { amountToSpend: any }) => {
   const { address } = useAccount();
-  console.log("amountToSpend", amountToSpend);
-  
   const {
     data: allowance,
     refetch: refetchAllowance,
@@ -64,5 +62,21 @@ export const useUsdtApproval = ({ amountToSpend }: { amountToSpend: any }) => {
     isApproving,
     writeSuccess,
     txApprovalHash,
+  };
+};
+
+
+
+export const useUSDTBalanceOf = () => {
+  const { address } = useAccount();
+  const { data: balanceOf } = useReadContract({
+    abi: usdtAbi,
+      address: usdtAddress,
+    functionName: "balanceOf",
+    args: address ? [address] : undefined,
+  });
+
+  return {
+    usdtBalanceOf: balanceOf?  Number(balanceOf) / 1e18: 0
   };
 };

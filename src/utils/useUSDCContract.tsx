@@ -15,8 +15,6 @@ import { icoAddress } from "@/contract/ico";
 
 export const useUsdcApproval = ({ amountToSpend }: { amountToSpend: any }) => {
   const { address } = useAccount();
-  console.log("amountToSpend", amountToSpend);
-  
   const {
     data: usdcAllowance,
     refetch: refetchAllowance,
@@ -29,8 +27,6 @@ export const useUsdcApproval = ({ amountToSpend }: { amountToSpend: any }) => {
     args: [address, icoAddress],
     // enabled: !!address,
   });
-
-  // 2️⃣ Prepare write for approve()
   const {
     writeContract,
     data: txApprovalHash,
@@ -66,5 +62,20 @@ export const useUsdcApproval = ({ amountToSpend }: { amountToSpend: any }) => {
     isUSDCApproving,
     writeSuccess,
     txApprovalHash,
+  };
+};
+
+
+export const useUSDCBalanceOf = () => {
+  const { address } = useAccount();
+  const { data: balanceOf } = useReadContract({
+    abi: usdcAbi,
+    address: usdcAddress,
+    functionName: "balanceOf",
+    args: address ? [address] : undefined,
+  });
+
+  return {
+    usdcBalanceOf: balanceOf?  Number(balanceOf) / 1e18: 0
   };
 };

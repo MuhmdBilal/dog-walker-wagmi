@@ -63,7 +63,6 @@ export const usePreviewUSDT = (tokenAmount: any) => {
       enabled,
     },
   });
-  // console.log("data". data);
 
   return {
     usdtValueWei: data,
@@ -233,5 +232,106 @@ export const useBuyTokensWithUSDC = () => {
     txUSDCLoading,
     txUSDCSuccess,
     txError,
+  };
+};
+
+export const useTokenSoldBalance = () => {
+  const {
+    data: balanceTokensSold,
+    isLoading: isLoadingTokenSold,
+    error,
+    refetch,
+    isFetching,
+  } = useReadContract({
+    address: icoAddress,
+    abi: icoAbi,
+    functionName: "tokensSold",
+    args: [],
+  });
+
+  return {
+    tokenSOldBalance: balanceTokensSold ? Number(balanceTokensSold) / 1e18 : 0,
+    isLoadingTokenSold,
+    error,
+    refetchTokenSold: refetch,
+    isFetchingTokenSold: isFetching,
+  };
+};
+
+export const useIcoRemainingBalance = () => {
+  const {
+    data: balanceIcoRemainingB,
+    isLoading: isLoadingIcoRemaining,
+    error,
+    refetch,
+    isFetching,
+  } = useReadContract({
+    address: icoAddress,
+    abi: icoAbi,
+    functionName: "icoRemaining",
+    args: [],
+  });
+
+  return {
+    icoRemainingBalance: balanceIcoRemainingB
+      ? Number(balanceIcoRemainingB) / 1e18
+      : 0,
+    isLoadingIcoRemaining,
+    error,
+    refetchIcoRemaining: refetch,
+    isFetchingIcoRemaining: isFetching,
+  };
+};
+
+export const useGetCurrentPrice = () => {
+  const { data: currentPrice } = useReadContract({
+    address: icoAddress,
+    abi: icoAbi,
+    functionName: "getCurrentPrice",
+    args: [],
+  });
+
+  return {
+    currentPrice: currentPrice ? Number(currentPrice) / 1e18 : 0,
+  };
+};
+
+export const useCurrentRoundPrice = () => {
+  const { data: currentRound } = useReadContract({
+    address: icoAddress,
+    abi: icoAbi,
+    functionName: "currentRound",
+    args: [],
+  });
+
+  return {
+    currentRound:  Number(currentRound)
+  };
+};
+
+
+export const useTotalRaisedUSD = () => {
+  const { data: totalRaisedUSD } = useReadContract({
+    address: icoAddress,
+    abi: icoAbi,
+    functionName: "totalRaisedUSD",
+    args: [],
+  });
+
+  return {
+    totalRaisedUSD: totalRaisedUSD?  Number(totalRaisedUSD) / 1e18: 0
+  };
+};
+
+export const useMaxPaise = () => {
+  const { data: maxPaise } = useReadContract({
+    address: icoAddress,
+    abi: icoAbi,
+    functionName: "MAX_RAISE",
+    args: [],
+  });
+
+  return {
+    maxPaise: maxPaise?  Number(maxPaise) / 1e18: 0
   };
 };
