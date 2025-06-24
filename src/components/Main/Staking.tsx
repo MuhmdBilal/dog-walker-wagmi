@@ -14,11 +14,81 @@ import Ellipse from "@/assets/img/Ellipse 5.svg";
 import Ellipse2 from "@/assets/img/Ellipse 6.svg";
 import DogWalkerLogo from "@/assets/img/DogLogoWhite.svg";
 import StakingClaimRewardsButton from "@/assets/img/StakingClaimRewardsButton.svg";
-
+import {
+  useAllowance,
+  useDwtApproval,
+  useDwtBalanceOf,
+} from "@/utils/useDwtContact";
+import {
+  useGetStakeData,
+  useGetUserPoolInfo,
+  useHasMinimumPurchased,
+  useStaking,
+} from "@/utils/useStakingContract";
+import { useAccount } from "wagmi";
+import { toast } from "react-toastify";
+import Link from "next/link";
 const Staking = () => {
   const { t } = useTranslation("staking");
   const [isMobile, setIsMobile] = useState(false);
+  const { dwtBalanceOf, dwtBalanceOfToWei, dwtTokenRefetch } = useDwtBalanceOf();
+  const { pctOfPool, pctOfPoolRefetch } = useGetUserPoolInfo();
+  const { dwtAllowance, dwtRefetch } = useAllowance();
+  const { totalStaked, totalStakedRefetch } = useGetStakeData();
+  const { isConnected } = useAccount();
+  const {
+    buyStaking,
+    isStakingPending,
+    txStakingSuccess,
+  } = useStaking();
+  const {
+    approveDwt,
+    approvalDwtConfirmed,
+    isDwtApproving,
+  } = useDwtApproval({ amountToSpend: dwtBalanceOfToWei });
+  const { hasMinimumPurchased } = useHasMinimumPurchased();
+  
+  const handleStaking = async () => {
+    if (!isConnected) {
+      toast.error("Please connect MetaMask first");
+      return;
+    }
+    if (totalStaked > 0) {
+      toast.error(
+        "You have already staked an amount. Additional staking is not allowed."
+      );
+      return;
+    }
 
+    if (dwtAllowance < dwtBalanceOf) {
+      approveDwt();
+    } else {
+      buyStaking({
+        value: dwtBalanceOfToWei,
+      });
+    }
+  };
+
+  const handlestakingSeperate = () => {
+     buyStaking({
+        value: dwtBalanceOfToWei,
+      });
+  };
+
+  useEffect(() => {
+    if (approvalDwtConfirmed) {
+      handlestakingSeperate();
+    }
+  }, [approvalDwtConfirmed]);
+  useEffect(()=>{
+   if(txStakingSuccess){
+    toast.success("Token staked successfully!");
+    pctOfPoolRefetch()
+    dwtRefetch()
+    totalStakedRefetch()
+    dwtTokenRefetch();
+   }
+  },[txStakingSuccess])
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 992);
     checkMobile();
@@ -80,24 +150,46 @@ const Staking = () => {
           <div className={classes.staking_boxOne}>
             <div className={classes.card}>
               <span className={classes.label}>{t("balanceLabel")}</span>
-              <span className={classes.value}>{t("balanceAmount")}</span>
+              <span className={classes.value}>
+                {Number(dwtBalanceOf).toFixed(2)} DWT
+              </span>
 
               <span className={classes.label}>{t("stakeableLabel")}</span>
-              <span className={classes.value}>{t("stakeableAmount")}</span>
-
-              <button className={classes.cta}>
-                {t("purchaseBalanceCTA")}
-                <Image src={PreSaleArrow} alt="" width={7} />
-              </button>
+              <span className={classes.value}>
+                {Number(dwtBalanceOf).toFixed(2)} DWT
+              </span>
+              {hasMinimumPurchased ? (
+                <button
+                  className={classes.cta}
+                  onClick={handleStaking}
+                  disabled={isDwtApproving || isStakingPending}
+                >
+                  {isDwtApproving || isStakingPending ? "Loading..." : "Stake"}
+                </button>
+              ) : (
+                <button className={classes.cta}>
+                  <Link
+                    href="#pre-sale"
+                    style={{ display: "flex", gap: "8px" }}
+                  >
+                    {t("purchaseBalanceCTA")}
+                    <Image src={PreSaleArrow} alt="" width={7} />
+                  </Link>
+                </button>
+              )}
             </div>
           </div>
           <div className={classes.staking_boxTwo}>
             <div className={classes.card}>
               <span className={classes.label}>{t("percentOfPoolLabel")}</span>
-              <span className={classes.value}>{t("percentOfPoolAmount")}</span>
+              <span className={classes.value}>
+                {Number(pctOfPool * 100).toFixed(2)} % DWT
+              </span>
 
               <span className={classes.label}>{t("totalStakedLabel")}</span>
-              <span className={classes.value}>{t("totalStakedAmount")}</span>
+              <span className={classes.value}>
+                {Number(totalStaked).toFixed(2) || "0.00"} DWT
+              </span>
 
               <button className={classes.cta}>
                 {t("withdrawTokensCTA")}

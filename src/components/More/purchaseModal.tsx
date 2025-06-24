@@ -18,6 +18,8 @@ import {
 } from "@/utils/useIcoContract";
 import { useUsdtApproval, useUSDTBalanceOf } from "@/utils/useUSDTContract";
 import { useUsdcApproval, useUSDCBalanceOf } from "@/utils/useUSDCContract";
+import { useDwtBalanceOf } from "@/utils/useDwtContact";
+import { useHasMinimumPurchased } from "@/utils/useStakingContract";
 interface PurchaseModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -70,6 +72,8 @@ const PurchaseModal: React.FC<PurchaseModalProps> = ({
   const { refetchIcoRemaining } = useIcoRemainingBalance();
   const { usdcBalanceOf } = useUSDCBalanceOf();
   const { usdtBalanceOf } = useUSDTBalanceOf();
+  const { dwtTokenRefetch } = useDwtBalanceOf();
+  const {hasMinimumPurchasedRefetch} =useHasMinimumPurchased()
   const { allowance, approveUSDT, approvalConfirmed, isApproving } =
     useUsdtApproval({ amountToSpend: usdtValueWei });
   const { usdcAllowance, approveUSDC, approvalUsdcConfirmed, isUSDCApproving } =
@@ -167,6 +171,8 @@ const PurchaseModal: React.FC<PurchaseModalProps> = ({
       resetForm();
       refetchTokenSold();
       refetchIcoRemaining();
+      dwtTokenRefetch();
+      hasMinimumPurchasedRefetch();
     }
   }, [txBNBSuccess, txUSDTSuccess, txUSDCSuccess]);
   useEffect(() => {
