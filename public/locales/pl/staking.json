@@ -9,8 +9,8 @@
   "withdrawTokensCTA": "Wyciągnij tokeny",
   "estimatedRewardsLabel": "Szacowane nagrody",
   "rewardsRateDynamic": "Stopa nagród jest dynamiczna",
-  "monthlyNote": "Miesięcznie = Stopa nagród % / 12",
-  "dailyNote": "Dzienne = Stopa nagród % / 365",
+  "monthlyNote": "Miesięcznie =",
+  "dailyNote": "Dzienne =",
   "currentRewardsLabel": "Aktualne nagrody",
   "totalRewardsLabel": "Łączne nagrody",
   "claimRewardsCTA": "Odbierz nagrody",
@@ -22,5 +22,6 @@
   "estimatedRewardsRate": "122% p/a",
   "currentRewardsAmount": "4377.4",
   "perEthBlockLabel": "per ETH Block",
-  "totalRewardsAmount": "0 DTW"
+  "totalRewardsAmount": "0 DTW",
+   "reward" : "Nagrody"
 }

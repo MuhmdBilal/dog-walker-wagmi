@@ -20,10 +20,16 @@ import {
   useDwtBalanceOf,
 } from "@/utils/useDwtContact";
 import {
+  useClaimReward,
+  useGetAccruedReward,
+  useGetRewardRates,
   useGetStakeData,
   useGetUserPoolInfo,
   useHasMinimumPurchased,
+  useIsLockPeriodOver,
+  useRewardsRemaining,
   useStaking,
+  useUnStaking,
 } from "@/utils/useStakingContract";
 import { useAccount } from "wagmi";
 import { toast } from "react-toastify";
@@ -31,23 +37,30 @@ import Link from "next/link";
 const Staking = () => {
   const { t } = useTranslation("staking");
   const [isMobile, setIsMobile] = useState(false);
-  const { dwtBalanceOf, dwtBalanceOfToWei, dwtTokenRefetch } = useDwtBalanceOf();
+  const { dwtBalanceOf, dwtBalanceOfToWei, dwtTokenRefetch } =
+    useDwtBalanceOf();
   const { pctOfPool, pctOfPoolRefetch } = useGetUserPoolInfo();
   const { dwtAllowance, dwtRefetch } = useAllowance();
   const { totalStaked, totalStakedRefetch } = useGetStakeData();
   const { isConnected } = useAccount();
-  const {
-    buyStaking,
-    isStakingPending,
-    txStakingSuccess,
-  } = useStaking();
-  const {
-    approveDwt,
-    approvalDwtConfirmed,
-    isDwtApproving,
-  } = useDwtApproval({ amountToSpend: dwtBalanceOfToWei });
+  const { buyStaking, isStakingPending, txStakingSuccess } = useStaking();
+  const { approveDwt, approvalDwtConfirmed, isDwtApproving } = useDwtApproval({
+    amountToSpend: dwtBalanceOfToWei,
+  });
+  const { hasgetRewardRatesRefetch, getRewardRates } = useGetRewardRates();
+  const { rewardsRemaining, rewardsRemainingRefetch } = useRewardsRemaining();
+  const { getAccruedReward, getAccruedRewardRefetch } = useGetAccruedReward();
+  const { isLockPeriodOver, isLockPeriodOverRefetch } = useIsLockPeriodOver();
   const { hasMinimumPurchased } = useHasMinimumPurchased();
-  
+  const { buyUnStaking, isUnStakingPending, txUnStakingSuccess } =
+    useUnStaking();
+  const {
+    buyClaimReward,
+    isClaimRewardPending,
+    isClaimRewardSuccess,
+    txClaimRewardLoading,
+    txClaimRewardSuccess,
+  } = useClaimReward();
   const handleStaking = async () => {
     if (!isConnected) {
       toast.error("Please connect MetaMask first");
@@ -62,33 +75,84 @@ const Staking = () => {
 
     if (dwtAllowance < dwtBalanceOf) {
       approveDwt();
+      dwtRefetch();
     } else {
       buyStaking({
         value: dwtBalanceOfToWei,
       });
     }
   };
-
   const handlestakingSeperate = () => {
-     buyStaking({
-        value: dwtBalanceOfToWei,
-      });
+    buyStaking({
+      value: dwtBalanceOfToWei,
+    });
   };
 
+  const handleUnstake = () => {
+    if (!isConnected) {
+      toast.error("Please connect MetaMask first");
+      return;
+    }
+    if (totalStaked <= 0) {
+      toast.error("Unable to unstake: staked token amount is 0.");
+      return;
+    }
+    buyUnStaking();
+  };
+  const handleClaim = async () => {
+    if (!isConnected) {
+      toast.error("Please connect MetaMask first");
+      return;
+    }
+    if (!isLockPeriodOver) {
+      toast.error(
+        "Staking is still in progress. Please wait until the period ends."
+      );
+      return;
+    }
+    buyClaimReward();
+  };
   useEffect(() => {
     if (approvalDwtConfirmed) {
       handlestakingSeperate();
     }
   }, [approvalDwtConfirmed]);
-  useEffect(()=>{
-   if(txStakingSuccess){
-    toast.success("Token staked successfully!");
-    pctOfPoolRefetch()
-    dwtRefetch()
-    totalStakedRefetch()
-    dwtTokenRefetch();
-   }
-  },[txStakingSuccess])
+  useEffect(() => {
+    if (txStakingSuccess) {
+      toast.success("Token staked successfully!");
+      pctOfPoolRefetch();
+      dwtRefetch();
+      totalStakedRefetch();
+      dwtTokenRefetch();
+      hasgetRewardRatesRefetch();
+      rewardsRemainingRefetch();
+      getAccruedRewardRefetch();
+    }
+  }, [txStakingSuccess]);
+  useEffect(() => {
+    if (txUnStakingSuccess) {
+      toast.success("Token unstaked successfully!");
+      pctOfPoolRefetch();
+      dwtRefetch();
+      totalStakedRefetch();
+      dwtTokenRefetch();
+      hasgetRewardRatesRefetch();
+      getAccruedRewardRefetch();
+      rewardsRemainingRefetch();
+    }
+  }, [txUnStakingSuccess]);
+  useEffect(() => {
+    if (txClaimRewardSuccess) {
+      toast.success("Stake reward claimed successfully!");
+      pctOfPoolRefetch();
+      dwtRefetch();
+      totalStakedRefetch();
+      dwtTokenRefetch();
+      hasgetRewardRatesRefetch();
+      getAccruedRewardRefetch();
+      rewardsRemainingRefetch();
+    }
+  }, [txClaimRewardSuccess]);
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 992);
     checkMobile();
@@ -191,9 +255,13 @@ const Staking = () => {
                 {Number(totalStaked).toFixed(2) || "0.00"} DWT
               </span>
 
-              <button className={classes.cta}>
-                {t("withdrawTokensCTA")}
-                <Image src={PreSaleArrow} alt="" width={7} />
+              <button
+                className={classes.cta}
+                onClick={handleUnstake}
+                disabled={isUnStakingPending}
+              >
+                {isUnStakingPending ? "Loading..." : t("withdrawTokensCTA")}
+                {/* <Image src={PreSaleArrow} alt="" width={7} /> */}
               </button>
             </div>
           </div>
@@ -203,12 +271,18 @@ const Staking = () => {
               <span className={classes.label}>
                 {t("estimatedRewardsLabel")}
               </span>
-              <span className={classes.value}>{t("estimatedRewardsRate")}</span>
+              <span className={classes.value}>
+                {getRewardRates || "0.00"}% P/a
+              </span>
 
               <ul className={classes.notes}>
                 <li>{t("rewardsRateDynamic")}</li>
-                <li>{t("monthlyNote")}</li>
-                <li>{t("dailyNote")}</li>
+                <li>
+                  {t("monthlyNote")} 1.25% &nbsp;{t("reward")}{" "}
+                </li>
+                <li>
+                  {t("dailyNote")} 0.041% &nbsp;{t("reward")}
+                </li>
               </ul>
             </div>
           </div>
@@ -217,8 +291,7 @@ const Staking = () => {
             <div className={classes.card}>
               <span className={classes.label}>{t("currentRewardsLabel")}</span>
               <span className={classes.value}>
-                {t("currentRewardsAmount")}{" "}
-                <small>{t("perEthBlockLabel")}</small>
+                {Number(rewardsRemaining).toFixed(2)}{" "}
               </span>
               <div className={classes.logoWrapper}>
                 <Image src={DogWalkerLogo} alt="DogWalker" width={160} />
@@ -228,15 +301,27 @@ const Staking = () => {
           <div className={classes.staking_boxFive}>
             <div className={classes.card}>
               <span className={classes.label}>{t("totalRewardsLabel")}</span>
-              <span className={classes.value}>{t("totalRewardsAmount")}</span>
+              <span className={classes.value}>
+                {Number(getAccruedReward).toFixed(2)} DWT
+              </span>
 
-              <button className={classes.ctaClaim}>
-                <Image
-                  src={StakingClaimRewardsButton}
-                  alt="Reward button"
-                  width={30}
-                />
-                {t("claimRewardsCTA")}
+              <button
+                className={classes.ctaClaim}
+                onClick={handleClaim}
+                disabled={isClaimRewardPending}
+              >
+                {isClaimRewardPending ? (
+                  "Loading..."
+                ) : (
+                  <>
+                    <Image
+                      src={StakingClaimRewardsButton}
+                      alt="Reward button"
+                      width={30}
+                    />
+                    {t("claimRewardsCTA")}
+                  </>
+                )}
               </button>
             </div>
           </div>

@@ -64,6 +64,64 @@ export const useHasMinimumPurchased = () => {
   };
 };
 
+export const useGetRewardRates = () => {
+  const { address } = useAccount();
+  const { data: getRewardRates, refetch } = useReadContract({
+    address: stakingAddress,
+    abi: stakingAbi,
+    functionName: "getRewardRates",
+    args: [],
+  }) as {
+    data: readonly [bigint, bigint] | undefined;
+    refetch: () => void;
+  };
+
+  return {
+    getRewardRates:
+      getRewardRates && getRewardRates[0] ? Number(getRewardRates[0]) : 0,
+    hasgetRewardRatesRefetch: refetch,
+  };
+};
+export const useRewardsRemaining = () => {
+  const { data: rewardsRemaining, refetch } = useReadContract({
+    address: stakingAddress,
+    abi: stakingAbi,
+    functionName: "rewardsRemaining",
+    args: [],
+  });
+
+  return {
+    rewardsRemaining: rewardsRemaining ? Number(rewardsRemaining) / 1e18 : 0,
+    rewardsRemainingRefetch: refetch,
+  };
+};
+export const useGetAccruedReward = () => {
+  const { address } = useAccount();
+  const { data: getAccruedReward, refetch } = useReadContract({
+    address: stakingAddress,
+    abi: stakingAbi,
+    functionName: "getAccruedReward",
+    args: address ? [address] : undefined,
+  });
+  return {
+    getAccruedReward: getAccruedReward ? Number(getAccruedReward) / 1e18 : 0,
+    getAccruedRewardRefetch: refetch,
+  };
+};
+export const useIsLockPeriodOver = () => {
+  const { address } = useAccount();
+  const { data: isLockPeriodOver, refetch } = useReadContract({
+    address: stakingAddress,
+    abi: stakingAbi,
+    functionName: "isLockPeriodOver",
+    args: address ? [address] : undefined,
+  });
+  return {
+    isLockPeriodOver: isLockPeriodOver,
+    isLockPeriodOverRefetch: refetch,
+  };
+};
+
 export const useStaking = () => {
   const {
     writeContract,
@@ -95,5 +153,74 @@ export const useStaking = () => {
     txStakingLoading,
     txStakingSuccess,
     txError,
+  };
+};
+
+export const useUnStaking = () => {
+  const {
+    writeContract,
+    data: hash,
+    isPending: isUnStakingPending,
+    isSuccess: isUnStakinhSuccess,
+  } = useWriteContract();
+
+  const {
+    isLoading: txUnStakingLoading,
+    isSuccess: txUnStakingSuccess,
+    error: txUnstakingError,
+  } = useWaitForTransactionReceipt({ hash });
+
+  const buyUnStaking = () => {
+    // if (!value) return;
+    writeContract({
+      address: stakingAddress,
+      abi: stakingAbi,
+      functionName: "unstake",
+      args: [],
+    });
+  };
+
+  return {
+    buyUnStaking,
+    isUnStakingPending,
+    isUnStakinhSuccess,
+    txUnStakingLoading,
+    txUnStakingSuccess,
+    txUnstakingError,
+  };
+};
+
+
+export const useClaimReward = () => {
+  const {
+    writeContract,
+    data: hash,
+    isPending: isClaimRewardPending,
+    isSuccess: isClaimRewardSuccess,
+  } = useWriteContract();
+
+  const {
+    isLoading: txClaimRewardLoading,
+    isSuccess: txClaimRewardSuccess,
+    error: txClaimRewardError,
+  } = useWaitForTransactionReceipt({ hash });
+
+  const buyClaimReward = () => {
+    // if (!value) return;
+    writeContract({
+      address: stakingAddress,
+      abi: stakingAbi,
+      functionName: "claimReward",
+      args: [],
+    });
+  };
+
+  return {
+    buyClaimReward,
+    isClaimRewardPending,
+    isClaimRewardSuccess,
+    txClaimRewardLoading,
+    txClaimRewardSuccess,
+    txClaimRewardError,
   };
 };
