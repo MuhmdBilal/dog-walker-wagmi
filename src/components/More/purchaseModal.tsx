@@ -15,6 +15,7 @@ import {
   usePreviewUSDC,
   usePreviewUSDT,
   useTokenSoldBalance,
+  useUserSpentUSD,
 } from "@/utils/useIcoContract";
 import { useUsdtApproval, useUSDTBalanceOf } from "@/utils/useUSDTContract";
 import { useUsdcApproval, useUSDCBalanceOf } from "@/utils/useUSDCContract";
@@ -74,6 +75,7 @@ const PurchaseModal: React.FC<PurchaseModalProps> = ({
   const { usdtBalanceOf } = useUSDTBalanceOf();
   const { dwtTokenRefetch } = useDwtBalanceOf();
   const {hasMinimumPurchasedRefetch} =useHasMinimumPurchased()
+  const {userSpentUSDRefetch} = useUserSpentUSD()
   const { allowance, approveUSDT, approvalConfirmed, isApproving } =
     useUsdtApproval({ amountToSpend: usdtValueWei });
   const { usdcAllowance, approveUSDC, approvalUsdcConfirmed, isUSDCApproving } =
@@ -173,6 +175,7 @@ const PurchaseModal: React.FC<PurchaseModalProps> = ({
       refetchIcoRemaining();
       dwtTokenRefetch();
       hasMinimumPurchasedRefetch();
+      userSpentUSDRefetch()
     }
   }, [txBNBSuccess, txUSDTSuccess, txUSDCSuccess]);
   useEffect(() => {

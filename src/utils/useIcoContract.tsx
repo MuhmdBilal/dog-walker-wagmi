@@ -72,13 +72,13 @@ export const usePreviewUSDT = (tokenAmount: any) => {
   };
 };
 
-export const useReferrer = () => {
+export const useUserSpentUSD = () => {
   const { address, isConnected } = useAccount();
 
-  const { data, isLoading, isError } = useReadContract({
+  const { data, isLoading, isError, refetch } = useReadContract({
     abi: icoAbi,
     address: icoAddress,
-    functionName: "referrerOf",
+    functionName: "userSpentUSD",
     args: [address],
     query: {
       enabled: isConnected && !!address,
@@ -86,9 +86,10 @@ export const useReferrer = () => {
   });
 
   return {
-    referrer: data,
+    userSpentUSD: data ? Number(data)/1e18: 0,
     isLoading,
     isError,
+    userSpentUSDRefetch : refetch
   };
 };
 
