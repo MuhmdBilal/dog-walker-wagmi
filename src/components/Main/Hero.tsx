@@ -16,6 +16,7 @@ import Ellipse2 from "@/assets/img/Ellipse 2.svg";
 import Vector2 from "@/assets/img/Vector2.svg";
 
 import classes from "./Hero.module.scss";
+import WalletConnection from "../WalletConnection/WalletConnection";
 
 const Hero: React.FC = () => {
   const { t } = useTranslation("hero");
@@ -43,10 +44,11 @@ const Hero: React.FC = () => {
         />
         <p className={classes.tagline}>{t("tagline")}</p>
         <div className={classes.ctaGroup}>
-          <button className={classes.ctaPrimary}>
+          <WalletConnection />
+          {/* <button className={classes.ctaPrimary}>
             <Image src={walletIcon} alt={t("ctaPrimary")} />
             <span>{t("ctaPrimary")}</span>
-          </button>
+          </button> */}
           <button className={classes.ctaSecondary}>{t("ctaSecondary")}</button>
         </div>
       </div>
