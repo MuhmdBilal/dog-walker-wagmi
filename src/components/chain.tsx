@@ -1,32 +1,33 @@
-// // chains/bscTestnet.js or directly in your config file
+// chains/bscMainnet.ts
 import { defineChain } from "viem";
 
-export const bscTestnet = defineChain({
-  id: 97,
-  name: "Binance Smart Chain Testnet",
+export const bscMainnet = defineChain({
+  id: 56,
+  name: "Binance Smart Chain",
   nativeCurrency: {
     name: "Binance Chain Native Token",
-    symbol: "tBNB",
+    symbol: "BNB",
     decimals: 18,
   },
   rpcUrls: {
     default: {
-      http: ["https://data-seed-prebsc-1-s1.binance.org:8545"],
+      http: ["https://bsc-dataseed.binance.org/"],
     },
     public: {
-      http: ["https://data-seed-prebsc-1-s1.binance.org:8545"],
+      http: ["https://bsc-dataseed.binance.org/"],
     },
   },
   blockExplorers: {
     default: {
       name: "BscScan",
-      url: "https://testnet.bscscan.com",
+      url: "https://bscscan.com",
     },
   },
   contracts: {
     multicall3: {
-      address: "0xca11bde05977b3631167028862be2a173976ca11", // universal Multicall3 used in many testnets
-    //   blockCreated: 1n, // Use real block if you want, or just use 1n
+      address: "0xca11bde05977b3631167028862be2a173976ca11",
+      // Optional block number if needed
+      // blockCreated: 15921452n, // example block, update if needed
     },
   },
-});
+} as const); // `as const` ensures proper type inference

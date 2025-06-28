@@ -13,7 +13,7 @@ import { walletConnect, injected, metaMask } from "wagmi/connectors";
 
 const projectId = "a35691f011761d63c1dd60354147a840";
 import { ToastContainer } from "react-toastify";
-import { bscTestnet } from "@/components/chain";
+import { bscMainnet } from "@/components/chain";
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
@@ -22,7 +22,7 @@ const geistMono = Geist_Mono({
 const origin =
   typeof window !== "undefined" ? window.location.origin : "https://reliable-hummingbird-72c4a6.netlify.app";
 const config = createConfig({
-  chains: [bscTestnet],
+  chains: [bscMainnet],
   connectors: [
     injected(),
     metaMask(),
@@ -42,8 +42,8 @@ const config = createConfig({
     // [mainnet.id]: http(),
     // [polygon.id]: http(),
     // [optimism.id]: http(),
-    // // [bscMainnet.id]: http("https://bsc-dataseed.binance.org"),
-    [bscTestnet.id]: http("https://data-seed-prebsc-1-s1.binance.org:8545"),
+    [bscMainnet.id]: http("https://bsc-dataseed.binance.org"),
+    // [bscTestnet.id]: http("https://data-seed-prebsc-1-s1.binance.org:8545"),
   },
 });
 const queryClient = new QueryClient();
